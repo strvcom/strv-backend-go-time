@@ -1,6 +1,7 @@
 package time
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -31,20 +32,38 @@ type Duration struct {
 	time.Duration
 }
 
+func (d Duration) MarshalText() ([]byte, error) {
+	return []byte(d.String()), nil
+}
+
+func (d *Duration) UnmarshalText(b []byte) error {
+	v, err := time.ParseDuration(string(b))
+	if err != nil {
+		return err
+	}
+	d.Duration = v
+	return nil
+}
+
 func (d Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.String())
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
 	var unmarshalledJSON interface{}
-
-	if err := json.Unmarshal(b, &unmarshalledJSON); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(b))
+	decoder.UseNumber()
+	if err := decoder.Decode(&unmarshalledJSON); err != nil {
 		return err
 	}
 
 	switch t := unmarshalledJSON.(type) {
-	case int, int32, int64, float64:
-		d.Duration = time.Duration(t.(float64))
+	case json.Number:
+		dur, err := t.Int64()
+		if err != nil {
+			return err
+		}
+		d.Duration = time.Duration(dur)
 	case string:
 		v, err := time.ParseDuration(t)
 		if err != nil {
