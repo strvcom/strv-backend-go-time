@@ -17,15 +17,54 @@ func TestDuration_MarshalText(t *testing.T) {
 }
 
 func TestDuration_UnmarshalText(t *testing.T) {
-	text := "3h0m0s"
-	d := Duration{}
+	tests := []struct {
+		name        string
+		text        string
+		expected    time.Duration
+		expectedErr string
+	}{
+		{
+			name:        "success",
+			text:        "3h0m0s",
+			expected:    time.Hour * 3,
+			expectedErr: "",
+		},
+		{
+			name:        "success:days",
+			text:        "2d",
+			expected:    Day * 2,
+			expectedErr: "",
+		},
+		{
+			name:        "success:complex-format",
+			text:        "2d3h0m5s",
+			expected:    Day*2 + time.Hour*3 + time.Second*5,
+			expectedErr: "",
+		},
+		{
+			name:        "failure",
+			text:        "unknown",
+			expected:    time.Duration(0),
+			expectedErr: `time: invalid duration "unknown"`,
+		},
+		{
+			name:        "failure:complex-format",
+			text:        "3dunknown",
+			expected:    Day * 3,
+			expectedErr: `time: invalid duration "unknown"`,
+		},
+	}
 
-	err := d.UnmarshalText([]byte(text))
-	assert.NoError(t, err)
-	assert.Equal(t, text, d.String())
-
-	err = d.UnmarshalText([]byte("unknown"))
-	assert.EqualError(t, err, `time: invalid duration "unknown"`)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := Duration{}
+			err := d.UnmarshalText([]byte(tt.text))
+			if tt.expectedErr != "" {
+				assert.Equal(t, tt.expectedErr, err.Error())
+			}
+			assert.Equal(t, tt.expected, d.Duration)
+		})
+	}
 }
 
 func TestDuration_MarshalJSON(t *testing.T) {
@@ -57,6 +96,18 @@ func TestDuration_UnmarshalJSON(t *testing.T) {
 			expectedErr: "",
 		},
 		{
+			name:        "success:days",
+			text:        `"2d"`,
+			expected:    Day * 2,
+			expectedErr: "",
+		},
+		{
+			name:        "success:complex-format",
+			text:        `"2d3h0m5s"`,
+			expected:    Day*2 + time.Hour*3 + time.Second*5,
+			expectedErr: "",
+		},
+		{
 			name:        "failure:invalid-number",
 			text:        "123456789.1",
 			expected:    time.Duration(0),
@@ -79,6 +130,12 @@ func TestDuration_UnmarshalJSON(t *testing.T) {
 			text:        `{"array":[]}`,
 			expected:    time.Duration(0),
 			expectedErr: `invalid type for duration: map[string]interface {}{"array":[]interface {}{}}`,
+		},
+		{
+			name:        "failure:complex-format",
+			text:        `"3dunknown"`,
+			expected:    Day * 3,
+			expectedErr: `time: invalid duration "unknown"`,
 		},
 	}
 

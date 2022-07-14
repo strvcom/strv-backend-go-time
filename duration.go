@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,6 +29,11 @@ const (
 	Second                    = 1000 * time.Millisecond
 	Minute                    = 60 * time.Second
 	Hour                      = 60 * time.Minute
+	Day                       = 24 * time.Hour
+)
+
+var (
+	daysRegex = regexp.MustCompile(`^(\d+)d\w*$`)
 )
 
 type Duration struct {
@@ -37,12 +45,7 @@ func (d Duration) MarshalText() ([]byte, error) {
 }
 
 func (d *Duration) UnmarshalText(b []byte) error {
-	v, err := time.ParseDuration(string(b))
-	if err != nil {
-		return err
-	}
-	d.Duration = v
-	return nil
+	return d.unmarshalText(string(b))
 }
 
 func (d Duration) MarshalJSON() ([]byte, error) {
@@ -65,14 +68,43 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 		}
 		d.Duration = time.Duration(dur)
 	case string:
-		v, err := time.ParseDuration(t)
+		return d.unmarshalText(t)
+	default:
+		return fmt.Errorf("invalid type for duration: %#v", unmarshalledJSON)
+	}
+
+	return nil
+}
+
+func (d *Duration) unmarshalText(text string) error {
+	days := daysRegex.FindAllStringSubmatch(text, -1)
+	if len(days) == 0 || len(days[0]) != 2 {
+		v, err := time.ParseDuration(text)
 		if err != nil {
 			return err
 		}
 		d.Duration = v
-	default:
-		return fmt.Errorf("invalid type for duration: %#v", unmarshalledJSON)
+		return nil
 	}
+
+	// Text contains days.
+	i, err := strconv.Atoi(days[0][1])
+	if err != nil {
+		return fmt.Errorf("invalid duration: %w", err)
+	}
+	d.Duration = Day * time.Duration(i)
+
+	// Remove days from text and continue the typical way.
+	rest := strings.TrimPrefix(text, days[0][1]+"d")
+	if len(rest) == 0 {
+		return nil
+	}
+
+	v, err := time.ParseDuration(rest)
+	if err != nil {
+		return err
+	}
+	d.Duration += v
 
 	return nil
 }
