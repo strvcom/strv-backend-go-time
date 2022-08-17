@@ -1,4 +1,9 @@
 # STRV time
+
+![Latest release][release]
+[![codecov][codecov-img]][codecov]
+![GitHub][license]
+
 Custom Go time & duration implementation.
 
 ## Duration
@@ -31,3 +36,8 @@ func main() {
 }
 ```
 As can be seen, there is an option to use days directly, so there is no need to use `720h` in case of `refresh_token_expiration` in the example. 
+
+[release]: https://img.shields.io/github/v/release/strvcom/strv-backend-go-time
+[codecov]: https://codecov.io/gh/strvcom/strv-backend-go-time
+[codecov-img]: https://codecov.io/gh/strvcom/strv-backend-go-time/branch/ci/github-actions/graph/badge.svg?token=FM3Y66NLKX
+[license]: https://img.shields.io/github/license/strvcom/strv-backend-go-time
