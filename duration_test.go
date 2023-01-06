@@ -8,7 +8,7 @@ import (
 )
 
 func TestDuration_MarshalText(t *testing.T) {
-	d := Duration{Duration: time.Hour * 3}
+	d := Duration(time.Hour * 3)
 	expected := []byte("3h0m0s")
 
 	data, err := d.MarshalText()
@@ -57,18 +57,18 @@ func TestDuration_UnmarshalText(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Duration{}
+			d := Duration(0)
 			err := d.UnmarshalText([]byte(tt.text))
 			if tt.expectedErr != "" {
 				assert.Equal(t, tt.expectedErr, err.Error())
 			}
-			assert.Equal(t, tt.expected, d.Duration)
+			assert.Equal(t, tt.expected, d.Duration())
 		})
 	}
 }
 
 func TestDuration_MarshalJSON(t *testing.T) {
-	d := Duration{Duration: time.Hour * 3}
+	d := Duration(time.Hour * 3)
 	expected := []byte(`"3h0m0s"`)
 
 	data, err := d.MarshalJSON()
@@ -141,12 +141,12 @@ func TestDuration_UnmarshalJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := Duration{}
+			d := Duration(0)
 			err := d.UnmarshalJSON([]byte(tt.text))
 			if tt.expectedErr != "" {
 				assert.Equal(t, tt.expectedErr, err.Error())
 			}
-			assert.Equal(t, tt.expected, d.Duration)
+			assert.Equal(t, tt.expected, d.Duration())
 		})
 	}
 }
