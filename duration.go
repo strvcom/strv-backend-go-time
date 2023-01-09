@@ -38,12 +38,14 @@ var (
 	daysRegex = regexp.MustCompile(`^(\d+)d\w*$`)
 )
 
-type Duration struct {
-	time.Duration
+type Duration time.Duration
+
+func (d Duration) Duration() time.Duration {
+	return time.Duration(d)
 }
 
 func (d Duration) MarshalText() ([]byte, error) {
-	return []byte(d.String()), nil
+	return []byte(time.Duration(d).String()), nil
 }
 
 func (d *Duration) UnmarshalText(b []byte) error {
@@ -51,11 +53,11 @@ func (d *Duration) UnmarshalText(b []byte) error {
 }
 
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.String())
+	return json.Marshal(time.Duration(d).String())
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
-	var unmarshalledJSON interface{}
+	var unmarshalledJSON any
 	decoder := json.NewDecoder(bytes.NewReader(b))
 	decoder.UseNumber()
 	if err := decoder.Decode(&unmarshalledJSON); err != nil {
@@ -68,7 +70,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 		if err != nil {
 			return err
 		}
-		d.Duration = time.Duration(dur)
+		*d = Duration(dur)
 	case string:
 		return d.unmarshalText(t)
 	default:
@@ -85,7 +87,7 @@ func (d *Duration) unmarshalText(text string) error {
 		if err != nil {
 			return err
 		}
-		d.Duration = v
+		*d = Duration(v)
 		return nil
 	}
 
@@ -94,7 +96,7 @@ func (d *Duration) unmarshalText(text string) error {
 	if err != nil {
 		return fmt.Errorf("invalid duration: %w", err)
 	}
-	d.Duration = Day * time.Duration(i)
+	*d = Duration(Day * time.Duration(i))
 
 	// Remove days from text and continue the typical way.
 	rest := strings.TrimPrefix(text, days[0][1]+"d")
@@ -106,7 +108,7 @@ func (d *Duration) unmarshalText(text string) error {
 	if err != nil {
 		return err
 	}
-	d.Duration += v
+	*d += Duration(v)
 
 	return nil
 }
