@@ -3,22 +3,17 @@ description: |
   Setup Go
 
 inputs:
-  go-version:
-    description: Used Go version
-    default: '1.19'
+  cache:
+    description: Cache
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
   steps:
-    - id: go-version
-      run: |
-        echo "Go version is set to ${{ inputs.go-version }}"
-        echo "GO_VERSION=${{ inputs.go-version }}" >> $GITHUB_ENV
-      shell: bash
     - id: go-setup
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v5
       with:
-        go-version: ${{ env.GO_VERSION }}
-    - run: |
-        go mod download
-      shell: bash
+        go-version-file: go.mod
+        check-latest: true
+        cache: ${{ inputs.cache }}
