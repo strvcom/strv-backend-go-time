@@ -1,8 +1,10 @@
 module go.strv.io/time
 
-go 1.23.3
+go 1.18
 
-require github.com/stretchr/testify v1.9.0
+toolchain go1.25.0
+
+require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

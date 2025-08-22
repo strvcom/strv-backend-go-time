@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDuration_MarshalText(t *testing.T) {
@@ -12,7 +13,7 @@ func TestDuration_MarshalText(t *testing.T) {
 	expected := []byte("3h0m0s")
 
 	data, err := d.MarshalText()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, data)
 }
 
@@ -72,7 +73,7 @@ func TestDuration_MarshalJSON(t *testing.T) {
 	expected := []byte(`"3h0m0s"`)
 
 	data, err := d.MarshalJSON()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, data)
 }
 
